@@ -1,0 +1,436 @@
+#root { width: 100%; min-height: 100vh; }
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 35px; color: #e6edf7; }
+.top-bar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; }
+h1,h2,p { margin:0; }
+h1 { letter-spacing:3px; font-size:27px; }
+h2 { font-size:15px; letter-spacing:1.5px; }
+.top-bar p, .shop-title p { color:#9aafc9; font-size:12px; margin-top:5px; }
+.top-stats { display:flex; flex-wrap:wrap; gap:10px; }
+.top-stats span { padding:10px 13px; background:#26364c; border:1px solid #405572; border-radius:8px; font-size:12px; }
+.top-stats b { color:#fff; margin-left:7px; }
+.top-stats .gold, .gold-label { color:#f8cd5a; }
+.game-area { padding:12px; border:1px solid #425a71; border-radius:12px; background:#111d2d; }
+.canvas-mount { width:100%; max-width:800px; margin:auto; }
+.canvas-mount canvas { display:block; margin:auto; max-width:100%; }
+.bench-panel,.shop-panel { margin-top:14px; background:#1d2c3f; border:1px solid #40546a; border-radius:12px; padding:16px; }
+.section-heading,.shop-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.section-heading span { color:#b1c5da; font-size:13px; }
+.bench-slots { display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); gap:7px; }
+.bench-slot { min-height:77px; min-width:0; padding:6px 2px; border:1px solid #566c84; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-align:center; }
+.bench-slot.empty { color:#5e7790; background:#253a4e; }
+.bench-slot.filled { background:#344b61; cursor:grab; }
+.bench-slot.filled:active { cursor:grabbing; }
+.bench-slot.selected { outline:2px solid #f8cd5a; }
+.bench-icon { font-size:26px; line-height:1; }
+.bench-name { font-size:11px; overflow-wrap:anywhere; }
+.bench-controls { margin-top:12px; display:flex; justify-content:space-between; gap:12px; align-items:center; color:#abc0d5; font-size:12px; }
+.control-buttons { display:flex; gap:8px; }
+button { font:inherit; cursor:pointer; }
+button:disabled { opacity:.42; cursor:not-allowed; }
+.control-buttons button,.reroll { padding:9px 14px; background:#36516e; border:1px solid #7690aa; color:#fff; border-radius:7px; }
+.control-buttons button:hover:not(:disabled),.reroll:hover:not(:disabled) { background:#456789; }
+.shop-title { margin-bottom:14px; }
+.shop-slots { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+.shop-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:152px; padding:10px 6px; background:#273c55; border:3px solid #97a6b1; border-radius:10px; color:#fff; text-align:center; }
+.shop-card:hover:not(:disabled) { background:#365372; transform:translateY(-2px); }
+.creature-mark { display:flex; align-items:center; justify-content:center; width:43px; height:43px; border-radius:50%; border:2px solid #edf4ff; font-size:27px; color:#fff; }
+.shop-card strong { font-size:14px; }
+.shop-card small,.type-line { color:#bdcee0; font-size:11px; }
+.gold-label { font-size:13px; font-weight:700; }
+.shop-empty { display:grid; place-items:center; min-height:152px; background:#243246; border:1px dashed #4b647d; color:#8299b0; border-radius:10px; font-size:12px; }
+.notice { margin-top:15px; padding:11px 13px; border-radius:8px; background:#2b435b; color:#d9e9fc; font-size:13px; }
+.footnote { margin-top:12px; text-align:center; color:#8199b4; font-size:11px; }
+@media(max-width:700px){.top-bar,.shop-title { align-items:flex-start; flex-direction:column; }.bench-slots{gap:3px}.bench-slot{min-height:58px}.bench-name{font-size:9px}.shop-slots{gap:4px}.shop-card{min-height:137px;padding:7px 2px}.shop-card strong{font-size:11px}.type-line{font-size:9px}.creature-mark{width:35px;height:35px}.bench-controls{flex-direction:column;align-items:flex-start}}
+
+/* Sell zone supports HTML bench drag events and Phaser document-pointer releases. */
+.sell-zone { margin-top:14px; padding:19px; border:2px dashed #a45e65;
+  border-radius:11px; background:#382633; text-align:center; color:#ffcbd0;
+  font-size:13px; font-weight:700; transition:background .12s, border-color .12s; }
+.sell-zone-hover { background:#783348 !important; border-color:#ffafae !important; }
+.drag-to-bench-hover { border-color:#7ce4ab; background:#2b554e; }
+
+/* Consistent icon tokens for every evolution stage. */
+.bench-icon { display:flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:50%; border:2px solid #eef5ff;
+  color:#fff; font-size:12px; font-weight:800; line-height:1;
+  letter-spacing:.3px; flex-shrink:0; text-shadow:0 1px 2px #213448; }
+.creature-mark { font-size:13px; font-weight:800; letter-spacing:.5px; }
+
+/* Milestone 2: deployed-unit dual-type + role synergy display */
+.synergy-panel {margin-top:14px;background:#1d2c3f;border:1px solid #40546a;border-radius:12px;padding:16px}
+.synergy-empty,.synergy-note {color:#a8bfd4;font-size:12px}
+.synergy-note {margin-top:12px}
+.synergy-list {display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:9px}
+.synergy-item {display:grid;grid-template-columns:1fr auto;gap:5px 9px;background:#26384c;border:1px solid #435b76;border-radius:8px;padding:10px}
+.synergy-item strong {grid-column:1;font-size:14px}
+.synergy-kind {grid-column:1 / -1;color:#88a5c5;font-size:10px;letter-spacing:1px}
+.synergy-count {font-size:13px;color:#b7cce2;text-align:right}
+.synergy-status {font-size:11px;color:#96aac1;text-align:right}
+.synergy-active {border-color:#65cf9d;background:#294c47}
+.synergy-active .synergy-status {color:#91efbc}
+
+/* Combat phase controls */
+.battle-controls { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px; margin-bottom:12px; border:1px solid #3c5773; border-radius:12px; background:#1e3046; color:#d9f2ff; flex-wrap:wrap; }
+.battle-controls button { background:#277e66; color:white; border:1px solid #54ba9d; border-radius:9px; padding:12px 20px; cursor:pointer; font-weight:700; }
+.battle-controls button:hover { background:#369c80; }
+
+/* Milestone 0.8: explicit synergy effects in the prep screen */
+.synergy-list { grid-template-columns:repeat(auto-fill,minmax(245px,1fr)); }
+.synergy-explained { align-content:start; }
+.synergy-effects { grid-column:1 / -1; font-size:12px; color:#aebfd1; line-height:1.5; border-top:1px solid #52657c; padding-top:8px; display:grid; gap:4px; }
+.synergy-effects b { color:#e5edf6; }
+.synergy-effects .effect-unlocked { color:#a2f2c2; }
+
+
+/* Layout-only upgrade: TFT-style vertical trait sidebar on desktop.
+   The Phaser game remains unchanged; this only repositions existing React panels. */
+.app { max-width: 1180px; }
+.battle-layout {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.battle-layout > .synergy-panel {
+  margin-top: 0;
+  min-width: 0;
+  position: sticky;
+  top: 14px;
+  max-height: calc(100vh - 28px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #526c84 transparent;
+}
+.battle-layout .synergy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.battle-layout .synergy-panel .section-heading {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 5px;
+}
+.battle-layout .synergy-panel .section-heading span {
+  font-size: 11px;
+}
+.battle-layout .synergy-item { width: 100%; }
+.battle-layout > .game-area { min-width: 0; }
+.battle-layout .canvas-mount { max-width: 800px; }
+
+/* On smaller displays the board is first; synergies stack below it. */
+@media (max-width: 1000px) {
+  .battle-layout { display: flex; flex-direction: column; }
+  .battle-layout > .game-area { order: 0; width: 100%; }
+  .battle-layout > .synergy-panel {
+    order: 1;
+    position: static;
+    width: 100%;
+    max-height: none;
+    overflow-y: visible;
+  }
+  .battle-layout .synergy-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+  .battle-layout .synergy-panel .section-heading {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+@media (max-width: 560px) {
+  .battle-layout .synergy-list { grid-template-columns: 1fr; }
+  .battle-layout .synergy-panel .section-heading { flex-direction: column; align-items: flex-start; }
+}
+
+
+/* Visual polish v0.9 — only layout and synergy presentation; game logic untouched */
+.app { max-width: 1530px; padding: 20px 24px 40px; }
+.battle-layout { grid-template-columns: 242px minmax(0,1fr); gap: 14px; }
+.battle-layout > .game-area { display: flex; justify-content: center; align-items: flex-start; padding: 12px 8px; }
+.battle-layout .canvas-mount { width: 100%; max-width: 1070px; }
+.battle-layout .canvas-mount canvas { width: 100%; height: auto; }
+.battle-layout > .synergy-panel { padding: 13px; }
+.battle-layout .synergy-list { gap: 7px; }
+.battle-layout .synergy-item { display: block; padding: 0; overflow: hidden; }
+.synergy-toggle { width:100%; border:0; border-radius:7px; background:transparent; color:#e6edf7; padding:10px 9px; display:flex; align-items:center; gap:9px; text-align:left; }
+.synergy-toggle:hover { background:rgba(170,200,230,.09); }
+.synergy-toggle:focus-visible { outline:2px solid #f8cd5a; outline-offset:-2px; }
+.trait-symbol { display:grid; place-items:center; width:32px; height:32px; flex-shrink:0; border-radius:8px; color:#b5d4ff; background:#344a66; font-size:19px; }
+.synergy-active .trait-symbol { background:#315d4f; color:#9cf2c5; }
+.trait-summary { display:flex; flex-direction:column; gap:3px; flex:1; min-width:0; }
+.trait-summary small { font-size:10px; color:#90a9c3; line-height:1.1; }
+.trait-summary strong { font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.trait-summary .trait-active-label { color:#91efbc; }
+.trait-progress { align-self:center; display:flex; align-items:center; gap:7px; font-size:12px; color:#c9d8e9; }
+.trait-chevron { font-size:18px; color:#a7bed6; width:12px; text-align:center; }
+.battle-layout .synergy-effects { margin:0 9px 10px; padding-top:9px; font-size:11px; line-height:1.5; }
+.game-area { box-shadow:inset 0 0 0 1px rgba(255,255,255,.025); }
+.top-bar h1 { font-size:29px; }
+.battle-controls { padding:12px 18px; }
+.bench-panel,.shop-panel { padding:18px; }
+.shop-card { transition: background .12s, transform .12s; }
+@media (min-width: 1600px) { .app { max-width: 1640px; } .battle-layout { grid-template-columns:255px minmax(0,1fr); } .battle-layout .canvas-mount {max-width:1180px;} }
+@media (max-width: 1000px) {
+ .app { padding:15px; }
+ .battle-layout > .game-area { width:100%; }
+ .battle-layout .canvas-mount { max-width: 100%; }
+ .battle-layout > .synergy-panel {width:100%;}
+ .battle-layout .synergy-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); }
+}
+@media(max-width:650px){ .app {padding:10px;} .top-bar h1 {font-size:22px;} .battle-layout .synergy-list {grid-template-columns:1fr;} .game-area {padding:4px;} .top-stats {gap:5px;} }
+
+
+/* v1.0 — Sell by dropping anywhere on the Pokémon shop.
+   The separate sell-zone is intentionally removed from App.tsx. */
+.shop-panel { position:relative; transition: background-color .15s ease, border-color .15s ease; }
+.shop-panel.shop-html-hover,
+.shop-panel.shop-drop-hover {
+  background:#2b4d4d;
+  border-color:#66dcaf;
+  box-shadow:inset 0 0 0 1px rgba(102,220,175,.35);
+}
+.shop-drop-hint {
+  position:absolute;
+  inset:0;
+  z-index:8;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  border:2px dashed #8befc9;
+  background:rgba(16,50,43,.92);
+  border-radius:11px;
+  color:#adfbdc;
+  font-size:17px;
+  font-weight:800;
+  pointer-events:none;
+}
+.shop-panel.shop-html-hover .shop-drop-hint,
+.shop-panel.shop-drop-hover .shop-drop-hint { display:flex; }
+
+/* Keep the game, bench, and shop on one desktop screen at normal zoom.
+   Smaller screens retain the scrollable layout rather than shrinking text too far. */
+@media (min-width:1080px) and (min-height:720px) {
+  html, body, #root { height:100%; overflow:hidden; }
+  .app {
+    box-sizing:border-box;
+    width:100%;
+    max-width:1660px;
+    height:100dvh;
+    min-height:0;
+    overflow:hidden;
+    margin-inline:auto;
+    padding:9px 16px;
+    display:grid;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto auto;
+    gap:7px;
+  }
+  .top-bar { margin:0; min-height:36px; }
+  .top-bar h1 { font-size:21px; line-height:1.1; }
+  .top-bar p { font-size:10px; margin-top:1px; }
+  .top-stats span { padding:6px 10px; }
+  .battle-controls { margin:0; padding:5px 12px; min-height:40px; }
+  .battle-controls button { padding:7px 12px; }
+  .battle-layout {
+    min-height:0;
+    align-items:stretch;
+    gap:9px;
+    grid-template-columns:230px minmax(0,1fr);
+  }
+  .battle-layout > .synergy-panel {
+    min-height:0;
+    max-height:none;
+    position:relative;
+    top:auto;
+    overflow-y:auto;
+    margin:0;
+    padding:10px;
+  }
+  .battle-layout > .game-area {
+    min-height:0;
+    min-width:0;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:3px;
+  }
+  .battle-layout .canvas-mount {
+    width:100%;
+    height:100%;
+    max-width:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:0;
+  }
+  .battle-layout .canvas-mount canvas {
+    display:block;
+    flex:0 1 auto;
+    height:100% !important;
+    width:auto !important;
+    max-width:100%;
+    max-height:100%;
+    aspect-ratio:4 / 3;
+  }
+  .bench-panel, .shop-panel { margin:0; padding:8px 12px; min-height:0; }
+  .section-heading, .shop-title { margin-bottom:5px; }
+  .section-heading h2,.shop-title h2 { font-size:12px; }
+  .bench-slots { gap:5px; }
+  .bench-slot { min-height:44px; height:44px; padding:3px; flex-direction:row; gap:4px; }
+  .bench-icon { width:24px; height:24px; font-size:9px; border-width:1px; }
+  .bench-name {font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bench-controls { margin-top:5px; min-height:27px; gap:7px; }
+  .bench-controls > span { flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .control-buttons {flex-shrink:0;}
+  .control-buttons button,.reroll { padding:4px 9px; font-size:11px; }
+  .shop-title p { font-size:10px; margin-top:2px; }
+  .shop-title {margin-bottom:6px;}
+  .shop-slots { gap:7px; }
+  .shop-card { min-height:76px; gap:2px; padding:4px 3px; border-width:2px; }
+  .creature-mark { width:25px; height:25px; font-size:9px; border-width:1px; }
+  .shop-card strong { font-size:11px; }
+  .shop-card small,.type-line { font-size:10px; line-height:1.15; }
+  .gold-label { font-size:11px; }
+  .shop-empty { min-height:76px; }
+  .notice {margin:0; padding:4px 10px; font-size:11px; min-height:22px;
+           overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .footnote { display:none; }
+  .battle-layout .synergy-list { gap:5px; }
+  .synergy-toggle { padding:7px; }
+}
+/* If the screen is short, keep the scrollable layout for readable controls. */
+@media (max-width:1079px), (max-height:719px) {
+  html, body, #root { overflow:auto; }
+}
+
+/* PokéTactics item inventory: compact one-row strip above the shop. */
+.items-panel { margin-top:10px; padding:9px 12px; background:#1d2c3f; border:1px solid #435b72; border-radius:11px; min-width:0; }
+.items-panel .section-heading { margin:0 0 5px; }
+.items-panel h2 small {font-size:11px;color:#a8c1d9}
+.item-buttons {display:flex;gap:5px;flex-wrap:wrap;}
+.item-buttons button,.equipped-item {border:1px solid #5e819a;color:#d8eafa;background:#2b455d;border-radius:6px;font-size:11px;padding:4px 7px;}
+.inventory-strip {display:flex;gap:5px;overflow-x:auto;padding:3px 2px;min-height:49px;scrollbar-width:thin;}
+.inventory-item {display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 84px;gap:1px;padding:3px;border:2px solid;border-radius:7px;background:#25384e;color:#e4effc;cursor:grab;min-width:0;}
+.inventory-item.chosen {outline:2px solid #f5cd68;outline-offset:1px;background:#43536a;}
+.item-token {font-size:12px;font-weight:900;letter-spacing:.7px;}
+.item-name {max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:9px;}
+.inventory-bottom {display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#acc3dc;font-size:10px;padding-top:4px;}
+.inventory-empty {font-size:12px;color:#a5b9cf;}
+.item-rule {display:block;margin-top:3px;color:#8aabc3;font-size:9px;}
+.craft-warning {color:#ffc2b3;font-size:10px;}
+.bench-items {position:absolute;bottom:1px;right:1px;display:flex;gap:1px;}
+.bench-items span {font-size:8px;background:#152232;color:#f9d98a;padding:1px 2px;border-radius:2px;}
+.bench-slot.filled {position:relative;}
+@media(min-width:1080px) and (min-height:720px) {
+  .app { grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto auto; }
+  .items-panel {margin:0;padding:4px 8px;}
+  .items-panel .section-heading {margin-bottom:2px;}
+  .inventory-strip {min-height:37px;}
+  .inventory-item {flex-basis:72px;padding:1px;}
+  .inventory-bottom {padding-top:1px;}
+  .item-rule {display:none;}
+}
+
+/* Item descriptions float above the tray. They NEVER participate in page layout,
+   so inspecting an item cannot cause the battle board to resize. */
+.items-panel { position: relative; z-index: 25; }
+.item-detail-popover {
+  position: absolute;
+  right: 10px;
+  bottom: calc(100% + 8px);
+  z-index: 100;
+  box-sizing: border-box;
+  width: min(400px, calc(100vw - 30px));
+  max-height: min(62vh, 480px);
+  overflow-y: auto;
+  border: 1px solid #8aa0be;
+  border-radius: 12px;
+  padding: 14px;
+  color: #e8f3ff;
+  background: #1e3047;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .5);
+}
+.item-detail-heading { display:flex; align-items:center; gap:10px; }
+.item-detail-symbol { flex:0 0 44px; height:44px; display:grid; place-items:center;
+  border:2px solid; border-radius:9px; background:#263c54; font-weight:800; font-size:13px; }
+.item-detail-title { min-width:0; flex:1; display:flex; flex-direction:column; gap:3px; }
+.item-detail-title strong { font-size:16px; }
+.item-detail-title small { font-size:11px; color:#a7c1dd; }
+.item-detail-close { flex:0 0 30px; height:30px; border-radius:7px; border:1px solid #5d7793;
+  background:#31485f; color:#f0f6ff; font-size:21px; line-height:1; }
+.item-detail-close:hover { background:#4e647d; }
+.item-detail-description { margin:12px 0; padding:9px; border-radius:8px; background:#294358;
+  color:#e5f2ff; font-size:13px; line-height:1.5; }
+.item-detail-stats,.item-detail-recipe { border-top:1px solid #47617b; padding-top:10px;
+  margin-top:8px; display:flex; flex-direction:column; gap:5px; font-size:12px; color:#bfdbec; }
+.item-detail-stats strong,.item-detail-recipe strong { color:#96d5ff; font-size:12px; }
+.item-detail-tip { margin-top:10px; font-size:11px; color:#91aeca; line-height:1.45; }
+/* Fixed one-line status; never wrap to an additional row. */
+.inventory-bottom { flex-wrap:nowrap; min-width:0; overflow:hidden; }
+.inventory-instruction { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.inventory-equipped-count { flex:0 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.equipped-item-control { flex:0 0 auto; display:inline-flex; gap:2px; max-width:130px; white-space:nowrap; }
+.equipped-item-control .equipped-item { min-width:0; padding:2px 4px; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.equipped-item-remove { border:1px solid #59748d; color:#eff6ff; background:#39536c;
+  border-radius:5px; padding:1px 5px; }
+.inventory-item:focus-visible { outline:2px solid #f5cd68; outline-offset:2px; }
+@media (min-width:1080px) and (min-height:720px) {
+  .items-panel { box-sizing:border-box; height:91px; min-height:91px; max-height:91px;
+    display:grid; grid-template-rows:23px minmax(0,1fr) 16px;
+    row-gap:1px; }
+  .items-panel .section-heading { height:23px; min-height:0; margin:0; flex-wrap:nowrap; }
+  .items-panel .section-heading h2 { white-space:nowrap; }
+  .item-buttons { flex-wrap:nowrap; min-width:0; }
+  .item-buttons button { white-space:nowrap; }
+  .inventory-strip { height:100%; min-height:0; overflow-x:auto; overflow-y:hidden; }
+  .inventory-bottom { height:16px; min-height:16px; padding:0; line-height:16px; white-space:nowrap; }
+  .item-rule { display:none; }
+}
+@media (max-width:700px) {
+  .item-detail-popover { right:0; bottom:calc(100% + 6px); max-height:58vh; }
+  .inventory-equipped-count { display:none; }
+}
+
+/* Milestone 1.1 — match economy HUD.  Keep overlays out of the grid flow. */
+.top-stats { gap: 5px; }
+.top-stats span { white-space: nowrap; }
+.top-stats .hp-normal { color: #84e0a5; }
+.top-stats .hp-low { color: #ff8c8c; }
+.phase-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.phase-title small { font-size: 10px; color: #a9c3d9; }
+.match-control-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 7px; min-width: 0; }
+.match-control-actions .economy-button { color: #e8efff; background: #334a64; border-color: #6784a2; padding: 7px 10px; font-size: 11px; }
+.match-control-actions .economy-button:disabled { opacity: .45; cursor: not-allowed; }
+.planning-clock { display: inline-flex; align-items: center; min-width: 75px; justify-content: center;
+  padding: 7px 10px; border: 1px solid #527493; border-radius: 7px; color: #a9dcfa; font-weight: 800; font-size: 12px; }
+.planning-clock.clock-warning { color: #ffbe78; border-color: #d5a06b; }
+.income-summary { font-size: 11px; color: #c7d9ea; max-width: min(42vw, 565px); text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+.shop-actions { display:flex; align-items: center; gap:7px; }
+.shop-odds-button { padding: 6px 12px; font-size: 11px; background:#314e66; border:1px solid #64829d;
+  border-radius: 7px; color:#edf7ff; cursor:pointer; }
+.shop-odds-button:hover { background:#41637f; }
+.shop-odds-popover { position:absolute; right:12px; bottom:calc(100% + 7px); z-index:28;
+  width:245px; max-width:calc(100vw - 25px); max-height:min(52vh,370px); overflow:auto; background:#243950;
+  border:1px solid #7594b1; border-radius:10px; box-shadow:0 10px 25px #0009; padding:11px; }
+.shop-odds-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; font-size:13px; }
+.shop-odds-header button { font-size:20px; color:#fff; background:none; border:none; cursor:pointer; }
+.shop-odds-row { display:flex; align-items:center; gap:8px; padding:5px 1px; border-bottom:1px solid #405a72; font-size:12px; }
+.shop-odds-row strong { margin-left:auto; }
+.shop-odds-color { display:block; width:12px; height:12px; border-radius:3px; }
+.shop-odds-popover small { display:block; margin-top:8px; font-size:10px; color:#a9bed4; line-height:1.5; }
+@media (min-width:1080px) and (min-height:720px) {
+  .top-bar { min-height:36px; }
+  .top-stats span { padding:5px 7px; font-size:11px; }
+  .battle-controls { min-height:46px; }
+  .battle-controls .phase-title small { font-size:9px; }
+  .match-control-actions { flex-wrap:nowrap; }
+  .match-control-actions > button { white-space:nowrap; }
+  .planning-clock { min-width:67px; padding:5px 7px; }
+}
+@media (max-width:1000px) {
+  .top-bar { flex-wrap:wrap; }
+  .match-control-actions { justify-content:flex-start; }
+  .income-summary { max-width:100%; white-space:normal; }
+}

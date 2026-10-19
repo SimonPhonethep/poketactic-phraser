@@ -1,0 +1,12 @@
+poketactic/
+├── node_modules/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── game/          ← NEW
+│   ├── App.tsx
+│   ├── App.css
+│   ├── index.css
+│   └── main.tsx
+├── package.json
+└── vite.config.ts

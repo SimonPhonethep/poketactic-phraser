@@ -1,0 +1,181 @@
+#root { width: 100%; min-height: 100vh; }
+.app { max-width: 1100px; margin: 0 auto; padding: 24px 20px 35px; color: #e6edf7; }
+.top-bar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; }
+h1,h2,p { margin:0; }
+h1 { letter-spacing:3px; font-size:27px; }
+h2 { font-size:15px; letter-spacing:1.5px; }
+.top-bar p, .shop-title p { color:#9aafc9; font-size:12px; margin-top:5px; }
+.top-stats { display:flex; flex-wrap:wrap; gap:10px; }
+.top-stats span { padding:10px 13px; background:#26364c; border:1px solid #405572; border-radius:8px; font-size:12px; }
+.top-stats b { color:#fff; margin-left:7px; }
+.top-stats .gold, .gold-label { color:#f8cd5a; }
+.game-area { padding:12px; border:1px solid #425a71; border-radius:12px; background:#111d2d; }
+.canvas-mount { width:100%; max-width:800px; margin:auto; }
+.canvas-mount canvas { display:block; margin:auto; max-width:100%; }
+.bench-panel,.shop-panel { margin-top:14px; background:#1d2c3f; border:1px solid #40546a; border-radius:12px; padding:16px; }
+.section-heading,.shop-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.section-heading span { color:#b1c5da; font-size:13px; }
+.bench-slots { display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); gap:7px; }
+.bench-slot { min-height:77px; min-width:0; padding:6px 2px; border:1px solid #566c84; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-align:center; }
+.bench-slot.empty { color:#5e7790; background:#253a4e; }
+.bench-slot.filled { background:#344b61; cursor:grab; }
+.bench-slot.filled:active { cursor:grabbing; }
+.bench-slot.selected { outline:2px solid #f8cd5a; }
+.bench-icon { font-size:26px; line-height:1; }
+.bench-name { font-size:11px; overflow-wrap:anywhere; }
+.bench-controls { margin-top:12px; display:flex; justify-content:space-between; gap:12px; align-items:center; color:#abc0d5; font-size:12px; }
+.control-buttons { display:flex; gap:8px; }
+button { font:inherit; cursor:pointer; }
+button:disabled { opacity:.42; cursor:not-allowed; }
+.control-buttons button,.reroll { padding:9px 14px; background:#36516e; border:1px solid #7690aa; color:#fff; border-radius:7px; }
+.control-buttons button:hover:not(:disabled),.reroll:hover:not(:disabled) { background:#456789; }
+.shop-title { margin-bottom:14px; }
+.shop-slots { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+.shop-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:152px; padding:10px 6px; background:#273c55; border:3px solid #97a6b1; border-radius:10px; color:#fff; text-align:center; }
+.shop-card:hover:not(:disabled) { background:#365372; transform:translateY(-2px); }
+.creature-mark { display:flex; align-items:center; justify-content:center; width:43px; height:43px; border-radius:50%; border:2px solid #edf4ff; font-size:27px; color:#fff; }
+.shop-card strong { font-size:14px; }
+.shop-card small,.type-line { color:#bdcee0; font-size:11px; }
+.gold-label { font-size:13px; font-weight:700; }
+.shop-empty { display:grid; place-items:center; min-height:152px; background:#243246; border:1px dashed #4b647d; color:#8299b0; border-radius:10px; font-size:12px; }
+.notice { margin-top:15px; padding:11px 13px; border-radius:8px; background:#2b435b; color:#d9e9fc; font-size:13px; }
+.footnote { margin-top:12px; text-align:center; color:#8199b4; font-size:11px; }
+@media(max-width:700px){.top-bar,.shop-title { align-items:flex-start; flex-direction:column; }.bench-slots{gap:3px}.bench-slot{min-height:58px}.bench-name{font-size:9px}.shop-slots{gap:4px}.shop-card{min-height:137px;padding:7px 2px}.shop-card strong{font-size:11px}.type-line{font-size:9px}.creature-mark{width:35px;height:35px}.bench-controls{flex-direction:column;align-items:flex-start}}
+
+/* Sell zone supports HTML bench drag events and Phaser document-pointer releases. */
+.sell-zone { margin-top:14px; padding:19px; border:2px dashed #a45e65;
+  border-radius:11px; background:#382633; text-align:center; color:#ffcbd0;
+  font-size:13px; font-weight:700; transition:background .12s, border-color .12s; }
+.sell-zone-hover { background:#783348 !important; border-color:#ffafae !important; }
+.drag-to-bench-hover { border-color:#7ce4ab; background:#2b554e; }
+
+/* Consistent icon tokens for every evolution stage. */
+.bench-icon { display:flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:50%; border:2px solid #eef5ff;
+  color:#fff; font-size:12px; font-weight:800; line-height:1;
+  letter-spacing:.3px; flex-shrink:0; text-shadow:0 1px 2px #213448; }
+.creature-mark { font-size:13px; font-weight:800; letter-spacing:.5px; }
+
+/* Milestone 2: deployed-unit dual-type + role synergy display */
+.synergy-panel {margin-top:14px;background:#1d2c3f;border:1px solid #40546a;border-radius:12px;padding:16px}
+.synergy-empty,.synergy-note {color:#a8bfd4;font-size:12px}
+.synergy-note {margin-top:12px}
+.synergy-list {display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:9px}
+.synergy-item {display:grid;grid-template-columns:1fr auto;gap:5px 9px;background:#26384c;border:1px solid #435b76;border-radius:8px;padding:10px}
+.synergy-item strong {grid-column:1;font-size:14px}
+.synergy-kind {grid-column:1 / -1;color:#88a5c5;font-size:10px;letter-spacing:1px}
+.synergy-count {font-size:13px;color:#b7cce2;text-align:right}
+.synergy-status {font-size:11px;color:#96aac1;text-align:right}
+.synergy-active {border-color:#65cf9d;background:#294c47}
+.synergy-active .synergy-status {color:#91efbc}
+
+/* Combat phase controls */
+.battle-controls { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px; margin-bottom:12px; border:1px solid #3c5773; border-radius:12px; background:#1e3046; color:#d9f2ff; flex-wrap:wrap; }
+.battle-controls button { background:#277e66; color:white; border:1px solid #54ba9d; border-radius:9px; padding:12px 20px; cursor:pointer; font-weight:700; }
+.battle-controls button:hover { background:#369c80; }
+
+/* Milestone 0.8: explicit synergy effects in the prep screen */
+.synergy-list { grid-template-columns:repeat(auto-fill,minmax(245px,1fr)); }
+.synergy-explained { align-content:start; }
+.synergy-effects { grid-column:1 / -1; font-size:12px; color:#aebfd1; line-height:1.5; border-top:1px solid #52657c; padding-top:8px; display:grid; gap:4px; }
+.synergy-effects b { color:#e5edf6; }
+.synergy-effects .effect-unlocked { color:#a2f2c2; }
+
+
+/* Layout-only upgrade: TFT-style vertical trait sidebar on desktop.
+   The Phaser game remains unchanged; this only repositions existing React panels. */
+.app { max-width: 1180px; }
+.battle-layout {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.battle-layout > .synergy-panel {
+  margin-top: 0;
+  min-width: 0;
+  position: sticky;
+  top: 14px;
+  max-height: calc(100vh - 28px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #526c84 transparent;
+}
+.battle-layout .synergy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.battle-layout .synergy-panel .section-heading {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 5px;
+}
+.battle-layout .synergy-panel .section-heading span {
+  font-size: 11px;
+}
+.battle-layout .synergy-item { width: 100%; }
+.battle-layout > .game-area { min-width: 0; }
+.battle-layout .canvas-mount { max-width: 800px; }
+
+/* On smaller displays the board is first; synergies stack below it. */
+@media (max-width: 1000px) {
+  .battle-layout { display: flex; flex-direction: column; }
+  .battle-layout > .game-area { order: 0; width: 100%; }
+  .battle-layout > .synergy-panel {
+    order: 1;
+    position: static;
+    width: 100%;
+    max-height: none;
+    overflow-y: visible;
+  }
+  .battle-layout .synergy-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+  .battle-layout .synergy-panel .section-heading {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+@media (max-width: 560px) {
+  .battle-layout .synergy-list { grid-template-columns: 1fr; }
+  .battle-layout .synergy-panel .section-heading { flex-direction: column; align-items: flex-start; }
+}
+
+
+/* Visual polish v0.9 — only layout and synergy presentation; game logic untouched */
+.app { max-width: 1530px; padding: 20px 24px 40px; }
+.battle-layout { grid-template-columns: 242px minmax(0,1fr); gap: 14px; }
+.battle-layout > .game-area { display: flex; justify-content: center; align-items: flex-start; padding: 12px 8px; }
+.battle-layout .canvas-mount { width: 100%; max-width: 1070px; }
+.battle-layout .canvas-mount canvas { width: 100%; height: auto; }
+.battle-layout > .synergy-panel { padding: 13px; }
+.battle-layout .synergy-list { gap: 7px; }
+.battle-layout .synergy-item { display: block; padding: 0; overflow: hidden; }
+.synergy-toggle { width:100%; border:0; border-radius:7px; background:transparent; color:#e6edf7; padding:10px 9px; display:flex; align-items:center; gap:9px; text-align:left; }
+.synergy-toggle:hover { background:rgba(170,200,230,.09); }
+.synergy-toggle:focus-visible { outline:2px solid #f8cd5a; outline-offset:-2px; }
+.trait-symbol { display:grid; place-items:center; width:32px; height:32px; flex-shrink:0; border-radius:8px; color:#b5d4ff; background:#344a66; font-size:19px; }
+.synergy-active .trait-symbol { background:#315d4f; color:#9cf2c5; }
+.trait-summary { display:flex; flex-direction:column; gap:3px; flex:1; min-width:0; }
+.trait-summary small { font-size:10px; color:#90a9c3; line-height:1.1; }
+.trait-summary strong { font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.trait-summary .trait-active-label { color:#91efbc; }
+.trait-progress { align-self:center; display:flex; align-items:center; gap:7px; font-size:12px; color:#c9d8e9; }
+.trait-chevron { font-size:18px; color:#a7bed6; width:12px; text-align:center; }
+.battle-layout .synergy-effects { margin:0 9px 10px; padding-top:9px; font-size:11px; line-height:1.5; }
+.game-area { box-shadow:inset 0 0 0 1px rgba(255,255,255,.025); }
+.top-bar h1 { font-size:29px; }
+.battle-controls { padding:12px 18px; }
+.bench-panel,.shop-panel { padding:18px; }
+.shop-card { transition: background .12s, transform .12s; }
+@media (min-width: 1600px) { .app { max-width: 1640px; } .battle-layout { grid-template-columns:255px minmax(0,1fr); } .battle-layout .canvas-mount {max-width:1180px;} }
+@media (max-width: 1000px) {
+ .app { padding:15px; }
+ .battle-layout > .game-area { width:100%; }
+ .battle-layout .canvas-mount { max-width: 100%; }
+ .battle-layout > .synergy-panel {width:100%;}
+ .battle-layout .synergy-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); }
+}
+@media(max-width:650px){ .app {padding:10px;} .top-bar h1 {font-size:22px;} .battle-layout .synergy-list {grid-template-columns:1fr;} .game-area {padding:4px;} .top-stats {gap:5px;} }
